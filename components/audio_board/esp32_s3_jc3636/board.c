@@ -100,7 +100,7 @@ static void test_draw_bitmap(esp_lcd_panel_handle_t panel_handle)
 
 void *audio_board_lcd_init(esp_periph_set_handle_t set, void *cb)
 {
-   // ESP_LOGW(TAG, "begin audio_board_lcd_init!!!");
+    // ESP_LOGW(TAG, "begin audio_board_lcd_init!!!");
     if (LCD_CLK_GPIO >= 0) {
         gpio_config_t bk_gpio_config = {.mode = GPIO_MODE_OUTPUT, .pin_bit_mask = 1ULL << LCD_CLK_GPIO};
         gpio_config(&bk_gpio_config);
@@ -127,18 +127,19 @@ void *audio_board_lcd_init(esp_periph_set_handle_t set, void *cb)
 
     // ESP_LOGW(TAG, "Install panel IO!!!");
     const esp_lcd_panel_io_spi_config_t io_config = ST77916_PANEL_IO_QSPI_CONFIG(LCD_CS_GPIO, NULL, NULL);
-    periph_lcd_cfg_t cfg = {.io_bus = (void *)SPI2_HOST,
-                            .new_panel_io = _get_lcd_io_bus,
-                            .lcd_io_cfg = &io_config,
-                            .new_lcd_panel = esp_lcd_new_panel_st77916,
-                            .lcd_dev_cfg = &panel_config,
-                            .rest_cb = NULL,
-                            .rest_cb_ctx = NULL,
-                            .lcd_swap_xy = LCD_SWAP_XY,
-                            .lcd_mirror_x = LCD_MIRROR_X,
-                            .lcd_mirror_y = LCD_MIRROR_Y,
-                            .lcd_color_invert = LCD_COLOR_INV,
-   //                         .vendor_init = esp_lcd_panel_init
+    periph_lcd_cfg_t cfg = {
+        .io_bus = (void *)SPI2_HOST,
+        .new_panel_io = _get_lcd_io_bus,
+        .lcd_io_cfg = &io_config,
+        .new_lcd_panel = esp_lcd_new_panel_st77916,
+        .lcd_dev_cfg = &panel_config,
+        .rest_cb = NULL,
+        .rest_cb_ctx = NULL,
+        .lcd_swap_xy = LCD_SWAP_XY,
+        .lcd_mirror_x = LCD_MIRROR_X,
+        .lcd_mirror_y = LCD_MIRROR_Y,
+        .lcd_color_invert = LCD_COLOR_INV,
+        //                         .vendor_init = esp_lcd_panel_init
     };
     ESP_LOGW(TAG, "before periph_lcd_init!!!");
     esp_periph_handle_t periph_lcd = periph_lcd_init(&cfg);
@@ -181,6 +182,7 @@ esp_err_t audio_board_sdcard_init(esp_periph_set_handle_t set, periph_sdcard_mod
     while (retry_time--) {
         if (periph_sdcard_is_mounted(sdcard_handle)) {
             mount_flag = true;
+            ESP_LOGI(TAG, "Sdcard /sdcard mount success!");
             break;
         } else {
             vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -188,6 +190,7 @@ esp_err_t audio_board_sdcard_init(esp_periph_set_handle_t set, periph_sdcard_mod
     }
     if (mount_flag == false) {
         ESP_LOGE(TAG, "Sdcard mount failed");
+        esp_periph_stop(sdcard_handle);
         return ESP_FAIL;
     }
     return ret;
